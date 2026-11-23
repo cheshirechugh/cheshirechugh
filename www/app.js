@@ -8,16 +8,30 @@
   // value 0..100 → red (0°) .. green (120°)
   const color = (v) => `hsl(${v * 1.2} 70% 50%)`;
 
-  const load = () => { try { return JSON.parse(localStorage.getItem(KEY)) || []; } catch { return []; } };
-  const store = (e) => { try { localStorage.setItem(KEY, JSON.stringify(e)); } catch {} };
-  let entries = load(); // [{t: ms, v: 0..100}]
+  // In the iPhone app, use native storage (iOS may purge web storage); in a browser, localStorage.
+  const Prefs = window.Capacitor?.isNativePlatform?.() && window.Capacitor.Plugins?.Preferences;
+  const parse = (s) => { try { return JSON.parse(s) || []; } catch { return []; } };
+  const lsGet = () => { try { return localStorage.getItem(KEY); } catch { return null; } };
+  async function load() {
+    if (!Prefs) return parse(lsGet());
+    const { value } = await Prefs.get({ key: KEY });
+    if (value != null) return parse(value);
+    const legacy = parse(lsGet());
+    if (legacy.length) await Prefs.set({ key: KEY, value: JSON.stringify(legacy) });
+    return legacy;
+  }
+  function store(e) {
+    const json = JSON.stringify(e);
+    try { localStorage.setItem(KEY, json); } catch {}
+    if (Prefs) Prefs.set({ key: KEY, value: json }).catch(() => {});
+  }
+  let entries = []; // [{t: ms, v: 0..100}]
   let range = 30;
   try { range = +(localStorage.getItem('mood.range') ?? 30); } catch {}
   let shown = 20;
 
   function setMood(v) { document.documentElement.style.setProperty('--mood', color(v)); }
   slider.addEventListener('input', () => setMood(+slider.value));
-  if (entries.length) slider.value = entries[entries.length - 1].v;
   setMood(+slider.value);
 
   saveBtn.addEventListener('click', () => {
@@ -172,8 +186,13 @@
 
   window.addEventListener('resize', () => renderChart(inRange()));
   render();
+  load().then((e) => {
+    entries = e.concat(entries); // keep anything saved before storage finished loading
+    if (entries.length) { slider.value = entries[entries.length - 1].v; setMood(+slider.value); }
+    render();
+  });
 
-  if ('serviceWorker' in navigator && location.protocol !== 'file:') {
+  if ('serviceWorker' in navigator && !window.Capacitor && /^https?:$/.test(location.protocol)) {
     navigator.serviceWorker.register('sw.js').catch(() => {});
   }
 })();

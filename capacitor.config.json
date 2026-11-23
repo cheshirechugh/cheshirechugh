@@ -1,0 +1,6 @@
+{
+  "appId": "com.cheshirechugh.mood",
+  "appName": "Mood",
+  "webDir": "www",
+  "ios": { "contentInset": "never", "backgroundColor": "#16181d" }
+}
