@@ -118,11 +118,12 @@
   function renderCalendar() {
     calendar.replaceChildren();
     const today = startOfDay(Date.now());
-    const n = range === 7 ? 7 : range === 30 ? 35 : range === 365 ? 371 : Math.max(35, Math.ceil((today - startOfDay(entries[0]?.t ?? today)) / DAY / 7 + 1) * 7);
-    // Align so the last column ends on today's weekday row; Monday-first weeks.
-    const dow = (new Date(today).getDay() + 6) % 7;
-    const end = today + (6 - dow) * DAY;
-    const start = end - (Math.ceil(n / 7) * 7 - 1) * DAY;
+    // Cover the whole selected range, padded out to full Monday-first weeks.
+    const first = range ? today - (range - 1) * DAY : Math.min(today - 34 * DAY, startOfDay(entries[0]?.t ?? today));
+    const monday = (t) => startOfDay(t - ((new Date(t).getDay() + 6) % 7) * DAY + DAY / 2);
+    const start = monday(first);
+    const end = startOfDay(monday(today) + 6.5 * DAY);
+    const n = Math.round((end - start) / DAY) + 1;
     const avg = new Map();
     entries.forEach((e) => { const d = startOfDay(e.t); const a = avg.get(d) || [0, 0]; a[0] += e.v; a[1]++; avg.set(d, a); });
     calendar.style.gridTemplateColumns = 'repeat(7, 1fr)';
