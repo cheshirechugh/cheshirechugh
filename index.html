@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#16181d">
+  <title>Mood</title>
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="icon.svg">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main>
+    <section class="log" aria-label="Log mood">
+      <div id="swatch" class="swatch" aria-hidden="true"></div>
+      <input id="mood" type="range" min="0" max="100" value="50" step="1" aria-label="Mood, red to green">
+      <button id="save" class="save" aria-label="Save mood">
+        <svg viewBox="0 0 24 24" width="32" height="32" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+    </section>
+
+    <section class="history" aria-label="Mood history">
+      <div class="ranges" role="tablist">
+        <button data-range="7" role="tab">7d</button>
+        <button data-range="30" role="tab">30d</button>
+        <button data-range="365" role="tab">1y</button>
+        <button data-range="0" role="tab">all</button>
+      </div>
+      <svg id="chart" class="chart" role="img" aria-label="Mood over time"></svg>
+      <div id="calendar" class="calendar" aria-label="Daily average mood"></div>
+      <div id="entries" class="entries"></div>
+    </section>
+  </main>
+  <script src="app.js"></script>
+</body>
+</html>
